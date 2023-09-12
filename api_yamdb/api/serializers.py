@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.utils import timezone
 
-from api.models import Title, Genre, Category
+from reviews.models import Title, Genre, Category
+from api.services import get_all_objects
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -22,10 +23,10 @@ class TitlePOSTSerilizer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         many=True,
-        queryset=Genre.objects.all(),
+        queryset=get_all_objects(Genre),
     )
     category = serializers.SlugRelatedField(
-        slug_field='slug', queryset=Category.objects.all())
+        slug_field='slug', queryset=get_all_objects(Category))
 
     class Meta:
         model = Title
@@ -40,8 +41,8 @@ class TitlePOSTSerilizer(serializers.ModelSerializer):
 
 
 class TitleGETSerilizer(serializers.ModelSerializer):
-    genre = GenreSerializer(read_only=True, many=True)
-    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=False, many=True)
+    category = CategorySerializer(read_only=False)
 
     class Meta:
         model = Title

@@ -3,7 +3,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import filters
 from rest_framework.serializers import ModelSerializer
 
-from api.models import Title
+from reviews.models import Title
 from api.services import get_all_objects
 from api.serializers import TitleGETSerilizer, TitlePOSTSerilizer
 from api.permissions import IsAdminOrReadOnly
