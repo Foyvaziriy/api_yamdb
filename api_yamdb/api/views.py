@@ -34,5 +34,5 @@ class CategoryViewSet(mixins.ListModelMixin,
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    def get_object(self):
+    def get_object(self) -> Category:
         return get_object_or_404(Category, slug=self.kwargs['slug'])
