@@ -1,12 +1,28 @@
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import filters
+from rest_framework import filters, status
 from rest_framework.serializers import ModelSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from reviews.models import Title
 from api.services import get_all_objects
 from api.serializers import TitleGETSerilizer, TitlePOSTSerilizer
 from api.permissions import IsAdminOrReadOnly
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            user = self.user
+            refresh = RefreshToken.for_user(user)
+            response.data['refresh'] = str(refresh)
+            response.data['user_id'] = user.id
+            response.data['email'] = user.email
+        return response
 
 
 class TitleViewSet(ModelViewSet):
