@@ -5,6 +5,15 @@ from django.utils import timezone
 from reviews.models import Title, Genre, Category
 from api.services import get_all_objects
 
+from api_yamdb.reviews.models import CustomUser
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'password')
+        extra_kwargs = {'password': {'write_only': True}}
+
 
 class GenreSerializer(serializers.ModelSerializer):
 
