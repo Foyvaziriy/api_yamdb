@@ -1,5 +1,7 @@
 from django.db import models
 
+from api.services import get_current_year
+
 
 class Genre(models.Model):
     name = models.CharField('genre name', max_length=256,)
@@ -32,6 +34,14 @@ class Title(models.Model):
         blank=True,
         related_name='titles',
     )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(year__lte=get_current_year()),
+                name='invalid year',
+            ),
+        ]
 
     def __str__(self) -> str:
         return self.name
