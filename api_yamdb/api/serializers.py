@@ -1,7 +1,12 @@
 from rest_framework import serializers
 from django.utils import timezone
 
-from reviews.models import Title, Genre, Category
+from reviews.models import (
+    Title,
+    Genre,
+    Category,
+    Review
+)
 from api.services import get_all_objects
 
 
@@ -48,3 +53,14 @@ class TitleGETSerilizer(serializers.ModelSerializer):
         model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'category', 'genre')
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username',
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
