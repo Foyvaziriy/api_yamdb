@@ -1,8 +1,7 @@
 from rest_framework import serializers
-from django.utils import timezone
 
 from reviews.models import Title, Genre, Category
-from api.services import get_all_objects
+from api.services import get_all_objects, get_current_year
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -34,7 +33,7 @@ class TitlePOSTSerilizer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'category', 'genre')
 
     def validate_year(self, value: int) -> int:
-        year = timezone.now().year
+        year = get_current_year()
         if value > year:
             raise serializers.ValidationError('Проверьте дату выхода')
         return value
