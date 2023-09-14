@@ -1,5 +1,6 @@
 from django.db.models import Model
 from django.db.models.query import QuerySet
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
 
@@ -19,3 +20,7 @@ def query_with_filter(model: Model,
         return model.objects.filter(
             **filter_dict
         )
+
+
+def get_current_year() -> int:
+    return timezone.now().year

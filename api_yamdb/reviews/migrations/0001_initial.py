@@ -19,16 +19,16 @@ class Migration(migrations.Migration):
             name='Category',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=64, verbose_name='Название категории')),
-                ('slug', models.SlugField(max_length=64, verbose_name='Слаг категории')),
+                ('name', models.CharField(max_length=256, verbose_name='category name')),
+                ('slug', models.SlugField(unique=True, verbose_name='category slug')),
             ],
         ),
         migrations.CreateModel(
             name='Genre',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=64, verbose_name='Название жанра')),
-                ('slug', models.SlugField(max_length=64, verbose_name='Слаг жанра')),
+                ('name', models.CharField(max_length=256, verbose_name='genre name')),
+                ('slug', models.SlugField(unique=True, verbose_name='genre slug')),
             ],
         ),
         migrations.CreateModel(
@@ -42,13 +42,22 @@ class Migration(migrations.Migration):
             name='Title',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=128, verbose_name='Название произведения')),
-                ('year', models.IntegerField(verbose_name='Год создания')),
-                ('rating', models.IntegerField(blank=True, null=True, verbose_name='Рейтинг произведения')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='Описание произведения')),
+                ('name', models.CharField(max_length=128, verbose_name='title name')),
+                ('year', models.IntegerField(verbose_name='release year')),
+                ('rating', models.IntegerField(blank=True, null=True, verbose_name='title rating')),
+                ('description', models.TextField(blank=True, null=True, verbose_name='title description')),
                 ('category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='titles', to='reviews.category')),
                 ('genre', models.ManyToManyField(through='reviews.GenreTitle', to='reviews.Genre')),
             ],
+        ),
+        migrations.AddField(
+            model_name='genretitle',
+            name='title',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reviews.title'),
+        ),
+        migrations.AddConstraint(
+            model_name='title',
+            constraint=models.CheckConstraint(check=models.Q(year__lte=2023), name='invalid year'),
         ),
         migrations.CreateModel(
             name='Review',

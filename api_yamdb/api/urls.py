@@ -13,6 +13,7 @@ router = DefaultRouter()
 router.register(r'titles/(?P<title_id>\d+)/reviews',
                 views.ReviewViewSet, basename='reviews')
 router.register('titles', views.TitleViewSet)
+router.register('categories', views.CategoryViewSet)
 
 urlpatterns = [
     path('', include(router.urls))
