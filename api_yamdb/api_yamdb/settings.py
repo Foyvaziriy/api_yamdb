@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'api.apps.ApiConfig',
     'reviews.apps.ReviewsConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -97,6 +98,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'users.CustomUser'
+
 
 # Internationalization
 
@@ -128,7 +131,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 5,
 }
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=14),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
