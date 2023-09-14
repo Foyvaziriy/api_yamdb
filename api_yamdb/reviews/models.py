@@ -1,4 +1,8 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 from api.services import get_current_year
 
@@ -53,3 +57,29 @@ class GenreTitle(models.Model):
 
     def __str__(self) -> str:
         return f'{self.genre} {self.title}'
+
+
+class Review(models.Model):
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='reviews')
+    text = models.TextField('Текст отзыва')
+    score = models.IntegerField(
+        'Оценка пользователя',
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(10)
+        ]
+    )
+    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE, related_name='reviews')
+
+
+class Comment(models.Model):
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='comments')
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name='comments')
+    text = models.TextField('Текст комментария')
+    pub_date = models.DateTimeField(
+        'Дата добавления комментария', auto_now_add=True)
