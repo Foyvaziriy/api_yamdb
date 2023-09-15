@@ -1,11 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpRequest
-from rest_framework import mixins, viewsets, status
-from rest_framework.generics import CreateAPIView
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
 
-from api.services import get_all_objects
 from users.serializers import AuthSerializer, SignUpSerializer
 from users.services import get_tokens_for_user
 
@@ -42,13 +41,33 @@ class Auth(CreateAPIView):
             )
 
 
-class Signup(mixins.CreateModelMixin,
-             viewsets.GenericViewSet):
-    queryset = get_all_objects(User)
+class Signup(GenericAPIView):
     serializer_class = SignUpSerializer
 
-    def perform_create(self, serializer):
-        confirmation_code = '1235'  # вот тут генерацию кода
-
-        # Вот тут надо настроить отсылку письма с кодом
-        serializer.save(confirmation_code=confirmation_code)
+    def post(self, request: HttpRequest) -> Response:
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            confirmation_code = '115143'  # вот тут генерацию кода
+            user = User.objects.filter(**request.data)
+            if user:
+                user = user[0]
+                user.confirmation_code = confirmation_code
+                user.save()
+                # send_code(confirmation_code, user.email)
+                return Response(
+                    serializer.validated_data,
+                    status=status.HTTP_200_OK,
+                )
+            new_user = User.objects.create(
+                **serializer.validated_data,
+                confirmation_code=confirmation_code
+            )
+            # send_code(confirmation_code, user.email)
+            return Response(
+                {
+                    'username': new_user.username,
+                    'email': new_user.email
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
