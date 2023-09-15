@@ -15,7 +15,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return bool(request.user and (request.user.role == 'admin'))
 
 
-class ReviewPermission(permissions.BasePermission):
+class AuthorAdminModeratorOrReadOnly(permissions.BasePermission):
     def has_permission(self, request: HttpRequest, view: ModelViewSet) -> bool:
         return (
                 request.method in permissions.SAFE_METHODS
