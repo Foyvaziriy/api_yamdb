@@ -4,6 +4,7 @@ from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import filters
 from rest_framework.serializers import ModelSerializer
 from rest_framework import mixins
+from rest_framework.exceptions import MethodNotAllowed
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 
@@ -23,7 +24,11 @@ from api.serializers import (
     CategorySerializer,
     UserSerializer
 )
-from api.permissions import IsAdminOrReadOnly, IsAdmin
+from api.permissions import (
+    IsAdminOrReadOnly,
+    IsAdmin,
+    ReviewPermission
+)
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +70,7 @@ class CategoryViewSet(mixins.ListModelMixin,
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (ReviewPermission,)
     filter_backends = (filters.OrderingFilter,)
     ordering = ('title',)
 
@@ -80,8 +86,13 @@ class ReviewViewSet(ModelViewSet):
             {'pk': self.kwargs.get('title_id')},
             single=True
         )
-
         serializer.save(
             author=self.request.user,
             title=title
         )
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            raise MethodNotAllowed(request.method)
+
+        return super().update(request, *args, **kwargs)

@@ -1,13 +1,16 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
 from reviews.models import (
     Title,
     Genre,
     Category,
     Review
 )
-from api.services import get_all_objects, get_current_year
+from api.services import (
+    get_all_objects,
+    get_current_year,
+    query_with_filter
+)
 
 
 User = get_user_model()
@@ -71,7 +74,21 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True, slug_field='username',
         default=serializers.CurrentUserDefault()
     )
+    pub_date = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%SZ', read_only=True)
 
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
+
+    def validate(self, data):
+        if self.context['request'].method == 'POST':
+            title = self.context['view'].kwargs['title_id']
+            if query_with_filter(
+                Review,
+                {'title': title,
+                 'author': self.context['request'].user
+                 }).exists():
+                raise serializers.ValidationError('Один пользователь может добавить '
+                                                  'только один отзыв в рамках произведения')
+
+        return data
