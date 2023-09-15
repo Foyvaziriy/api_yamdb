@@ -1,17 +1,15 @@
-import logging
-
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import filters
 from rest_framework.serializers import ModelSerializer
 from rest_framework import mixins
-from rest_framework.exceptions import MethodNotAllowed
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 
 from reviews.models import (
     Title,
     Review,
-    Category
+    Category,
+    Comment
 )
 from api.services import (
     get_all_objects,
@@ -22,15 +20,15 @@ from api.serializers import (
     TitlePOSTSerilizer,
     ReviewSerializer,
     CategorySerializer,
-    UserSerializer
+    UserSerializer,
+    CommentSerializer
 )
 from api.permissions import (
     IsAdminOrReadOnly,
     IsAdmin,
-    ReviewPermission
+    AuthorAdminModeratorOrReadOnly
 )
-
-log = logging.getLogger(__name__)
+from api.mixins import NoPutViewSetMixin
 
 User = get_user_model()
 
@@ -68,9 +66,9 @@ class CategoryViewSet(mixins.ListModelMixin,
         return get_object_or_404(Category, slug=self.kwargs['slug'])
 
 
-class ReviewViewSet(ModelViewSet):
+class ReviewViewSet(NoPutViewSetMixin, ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (ReviewPermission,)
+    permission_classes = (AuthorAdminModeratorOrReadOnly,)
     filter_backends = (filters.OrderingFilter,)
     ordering = ('title',)
 
@@ -91,8 +89,30 @@ class ReviewViewSet(ModelViewSet):
             title=title
         )
 
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            raise MethodNotAllowed(request.method)
 
-        return super().update(request, *args, **kwargs)
+class CommentViewSet(NoPutViewSetMixin, ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (AuthorAdminModeratorOrReadOnly,)
+    filter_backends = (filters.OrderingFilter,)
+    ordering = ('-pub_date',)
+
+    def get_queryset(self):
+        return query_with_filter(
+            Comment,
+            {'review': self.kwargs.get('review_id'),
+             'review__title': self.kwargs.get('title_id')
+             }
+        )
+
+    def perform_create(self, serializer):
+        review = query_with_filter(
+            Review,
+            {'pk': self.kwargs.get('review_id'),
+             'title': self.kwargs.get('title_id')
+             },
+            single=True
+        )
+        serializer.save(
+            author=self.request.user,
+            review=review
+        )

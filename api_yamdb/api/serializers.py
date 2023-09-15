@@ -4,7 +4,8 @@ from reviews.models import (
     Title,
     Genre,
     Category,
-    Review
+    Review,
+    Comment
 )
 from api.services import (
     get_all_objects,
@@ -69,13 +70,15 @@ class TitleGETSerilizer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'category', 'genre')
 
 
-class ReviewSerializer(serializers.ModelSerializer):
+class ReviewCommentSerializerAbstract(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username',
         default=serializers.CurrentUserDefault()
     )
     pub_date = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%SZ', read_only=True)
 
+
+class ReviewSerializer(ReviewCommentSerializerAbstract):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
@@ -92,3 +95,9 @@ class ReviewSerializer(serializers.ModelSerializer):
                                                   'только один отзыв в рамках произведения')
 
         return data
+
+
+class CommentSerializer(ReviewCommentSerializerAbstract):
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
