@@ -1,10 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView
-)
+
 from api import views
 
 
@@ -14,7 +10,9 @@ router.register(r'titles/(?P<title_id>\d+)/reviews',
                 views.ReviewViewSet, basename='reviews')
 router.register('titles', views.TitleViewSet)
 router.register('categories', views.CategoryViewSet)
+router.register('users', views.UsersViewSet)
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path('auth/', include('users.urls'))
 ]

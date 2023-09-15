@@ -5,6 +5,7 @@ from rest_framework import filters
 from rest_framework.serializers import ModelSerializer
 from rest_framework import mixins
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
 
 from reviews.models import (
     Title,
@@ -19,11 +20,20 @@ from api.serializers import (
     TitleGETSerilizer,
     TitlePOSTSerilizer,
     ReviewSerializer,
-    CategorySerializer
+    CategorySerializer,
+    UserSerializer
 )
-from api.permissions import IsAdminOrReadOnly
+from api.permissions import IsAdminOrReadOnly, IsAdmin
 
 log = logging.getLogger(__name__)
+
+User = get_user_model()
+
+
+class UsersViewSet(ModelViewSet):
+    queryset = get_all_objects(User)
+    serializer_class = UserSerializer
+    permission_classes = (IsAdmin,)
 
 
 class TitleViewSet(ModelViewSet):
