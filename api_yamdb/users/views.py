@@ -9,7 +9,7 @@ from api.services import get_all_objects
 from api.serializers import UserSerializer
 from users.serializers import AuthSerializer, SignUpSerializer
 from users.services import get_tokens_for_user
-
+from .services import generate_verification_code, send_verification_email
 
 User = get_user_model()
 
@@ -30,7 +30,6 @@ class Auth(GenericAPIView):
             confirmation_code=data.get('confirmation_code'),
         )
         tokens = get_tokens_for_user(user)
-
         return Response(tokens, status=status.HTTP_200_OK)
 
 
@@ -39,8 +38,11 @@ class Signup(mixins.CreateModelMixin,
     queryset = get_all_objects(User)
     serializer_class = SignUpSerializer
 
-    def perform_create(self, serializer):
-        confirmation_code = '1235'  # вот тут генерацию кода
+    def perform_create(self, serializer, user=User):
+        verification_code = generate_verification_code()
+        user.profile.verification_code = verification_code
+        user.profile.save()
 
-        # Вот тут надо настроить отсылку письма с кодом
-        serializer.save(confirmation_code=confirmation_code)
+        send_verification_email(user.email, verification_code)
+        return Response({'message': 'Регистрация прошла успешно. Проверьте вашу почту для активации аккаунта.'},
+                        status=status.HTTP_201_CREATED)
