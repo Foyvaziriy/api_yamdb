@@ -13,5 +13,5 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class AuthSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    confirmation_code = serializers.CharField()
+    username = serializers.SlugField(max_length=150)
+    confirmation_code = serializers.CharField(max_length=256)
