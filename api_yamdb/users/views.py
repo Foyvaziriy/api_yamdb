@@ -27,7 +27,7 @@ class Auth(GenericAPIView):
         user = get_object_or_404(
             User,
             username=data.get('username'),
-            #confirmation_code=data.get('confirmation_code'),
+            confirmation_code=data.get('confirmation_code'),
         )
         tokens = get_tokens_for_user(user)
 
