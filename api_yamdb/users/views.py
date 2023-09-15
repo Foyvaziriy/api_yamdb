@@ -6,7 +6,8 @@ from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
 
 from users.serializers import AuthSerializer, SignUpSerializer
-from users.services import get_tokens_for_user
+from users.services import (
+    get_tokens_for_user, generate_verification_code, send_verification_email)
 
 
 User = get_user_model()
@@ -47,12 +48,16 @@ class Signup(GenericAPIView):
     def post(self, request: HttpRequest) -> Response:
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            confirmation_code = '115143'  # вот тут генерацию кода
+            confirmation_code = generate_verification_code()  # вот тут генерацию кода
             user = User.objects.filter(**request.data)
             if user:
                 user = user[0]
                 user.confirmation_code = confirmation_code
                 user.save()
+                send_verification_email(
+                    to_email=user.email,
+                    verification_code=confirmation_code
+                )
                 # send_code(confirmation_code, user.email)
                 return Response(
                     serializer.validated_data,
@@ -62,6 +67,8 @@ class Signup(GenericAPIView):
                 **serializer.validated_data,
                 confirmation_code=confirmation_code
             )
+            send_verification_email(
+                to_email=new_user.email, verification_code=confirmation_code)
             # send_code(confirmation_code, user.email)
             return Response(
                 {
