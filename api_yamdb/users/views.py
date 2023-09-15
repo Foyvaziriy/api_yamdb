@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from users.serializers import AuthSerializer, SignUpSerializer
 from users.services import (
-    get_tokens_for_user, generate_verification_code, send_verification_email)
+    get_tokens_for_user, generate_confirmation_code, send_verification_email)
 
 
 User = get_user_model()
@@ -48,7 +48,7 @@ class Signup(GenericAPIView):
     def post(self, request: HttpRequest) -> Response:
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            confirmation_code = generate_verification_code()  # вот тут генерацию кода
+            confirmation_code = generate_confirmation_code()  # вот тут генерацию кода
             user = User.objects.filter(**request.data)
             if user:
                 user = user[0]
