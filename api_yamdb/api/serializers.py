@@ -54,7 +54,7 @@ class TitlePOSTSerilizer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'category', 'genre')
+            'id', 'name', 'year', 'description', 'category', 'genre')
 
     def validate_year(self, value: int) -> int:
         year = get_current_year()
@@ -76,7 +76,7 @@ class TitleGETSerilizer(serializers.ModelSerializer):
     def get_rating(self, obj) -> int:
         rating = query_average_by_field(Title, 'reviews__score')
 
-        return int(rating)
+        return rating
 
 
 class ReviewCommentSerializerAbstract(serializers.ModelSerializer):
