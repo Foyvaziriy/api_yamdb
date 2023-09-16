@@ -1,5 +1,7 @@
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework import filters
+from rest_framework import filters, viewsets
 from rest_framework.serializers import ModelSerializer
 from rest_framework import mixins
 from django.shortcuts import get_object_or_404
@@ -35,13 +37,18 @@ from api.mixins import NoPutViewSetMixin
 from api.filters import TitleFilter
 
 
+
 User = get_user_model()
 
 
-class UsersViewSet(ModelViewSet):
-    queryset = get_all_objects(User)
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdmin,)
+    permission_classes = (IsAuthenticated, IsAdmin)
+    filter_backends = (SearchFilter,)
+    search_fields = ('username',)
+    lookup_field = 'username'
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
 
 class TitleViewSet(NoPutViewSetMixin, ModelViewSet):
