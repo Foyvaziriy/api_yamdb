@@ -4,12 +4,14 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import mixins
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
+from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import (
     Title,
     Review,
     Category,
-    Comment
+    Comment,
+    Genre,
 )
 from api.services import (
     get_all_objects,
@@ -21,14 +23,17 @@ from api.serializers import (
     ReviewSerializer,
     CategorySerializer,
     UserSerializer,
-    CommentSerializer
+    CommentSerializer,
+    GenreSerializer,
 )
 from api.permissions import (
     IsAdminOrReadOnly,
     IsAdmin,
-    AuthorAdminModeratorOrReadOnly
+    AuthorAdminModeratorOrReadOnly,
 )
 from api.mixins import NoPutViewSetMixin
+from api.filters import TitleFilter
+
 
 User = get_user_model()
 
@@ -39,11 +44,11 @@ class UsersViewSet(ModelViewSet):
     permission_classes = (IsAdmin,)
 
 
-class TitleViewSet(ModelViewSet):
+class TitleViewSet(NoPutViewSetMixin, ModelViewSet):
     queryset = get_all_objects(Title)
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('category__slug', 'genre__slug', 'name', 'year')
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
 
     def get_serializer_class(self) -> ModelSerializer:
         if self.request.method == 'GET':
@@ -63,7 +68,22 @@ class CategoryViewSet(mixins.ListModelMixin,
     lookup_field = 'slug'
 
     def get_object(self) -> Category:
-        return get_object_or_404(Category, slug=self.kwargs['slug'])
+        return get_object_or_404(Category, slug=self.kwargs.get('slug'))
+
+
+class GenreViewSet(mixins.ListModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   GenericViewSet):
+    queryset = get_all_objects(Genre)
+    serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+    def get_object(self) -> Genre:
+        return get_object_or_404(Genre, slug=self.kwargs.get('slug'))
 
 
 class ReviewViewSet(NoPutViewSetMixin, ModelViewSet):
