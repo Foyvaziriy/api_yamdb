@@ -2,9 +2,10 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth import get_user_model
 
-User = get_user_model()
-
 from api.services import get_current_year
+
+
+User = get_user_model()
 
 
 class Genre(models.Model):
@@ -26,8 +27,6 @@ class Category(models.Model):
 class Title(models.Model):
     name = models.CharField('title name', max_length=128)
     year = models.IntegerField('release year')
-    rating = models.IntegerField('title rating', blank=True, null=True)
-    # Поле rating временно реализовано с помощью IntegerField
     description = models.TextField(
         'title description', blank=True, null=True)
     genre = models.ManyToManyField(Genre, through='GenreTitle')
