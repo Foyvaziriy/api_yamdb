@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from reviews.models import (
@@ -10,7 +12,8 @@ from reviews.models import (
 from api.services import (
     get_all_objects,
     get_current_year,
-    query_with_filter
+    query_with_filter,
+    query_average_by_field
 )
 
 
@@ -63,11 +66,17 @@ class TitlePOSTSerilizer(serializers.ModelSerializer):
 class TitleGETSerilizer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=False, many=True)
     category = CategorySerializer(read_only=False)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'category', 'genre')
+
+    def get_rating(self, obj) -> int:
+        rating = query_average_by_field(Title, 'reviews__score')
+
+        return int(rating)
 
 
 class ReviewCommentSerializerAbstract(serializers.ModelSerializer):
