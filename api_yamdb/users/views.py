@@ -1,12 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpRequest
+from django.db.models.query import QuerySet
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
 
 from users.serializers import AuthSerializer, SignUpSerializer
-from users.services import get_tokens_for_user
+from users.services import (
+    get_tokens_for_user, generate_confirmation_code, send_code)
 
 
 User = get_user_model()
@@ -45,15 +47,18 @@ class Signup(GenericAPIView):
     serializer_class = SignUpSerializer
 
     def post(self, request: HttpRequest) -> Response:
-        serializer = self.serializer_class(data=request.data)
+        serializer: SignUpSerializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            confirmation_code = '115143'  # вот тут генерацию кода
-            user = User.objects.filter(**request.data)
+            confirmation_code: str = generate_confirmation_code()
+            user: QuerySet = User.objects.filter(**request.data)
             if user:
                 user = user[0]
                 user.confirmation_code = confirmation_code
                 user.save()
-                # send_code(confirmation_code, user.email)
+                send_code(
+                    user_email=user.email,
+                    confirmation_code=confirmation_code
+                )
                 return Response(
                     serializer.validated_data,
                     status=status.HTTP_200_OK,
@@ -62,7 +67,10 @@ class Signup(GenericAPIView):
                 **serializer.validated_data,
                 confirmation_code=confirmation_code
             )
-            # send_code(confirmation_code, user.email)
+            send_code(
+                user_email=new_user.email,
+                confirmation_code=confirmation_code
+            )
             return Response(
                 {
                     'username': new_user.username,
