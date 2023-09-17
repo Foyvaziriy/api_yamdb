@@ -46,6 +46,7 @@ class UsersViewSet(NoPutViewSetMixin, ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     lookup_field = 'username'
+    ordering = ('username',)
 
     def get_object(self):
         return get_object_or_404(User, username=self.kwargs['username'])
@@ -71,6 +72,7 @@ class TitleViewSet(NoPutViewSetMixin, ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    ordering = ('name',)
 
     def get_serializer_class(self) -> ModelSerializer:
         if self.request.method == 'GET':
@@ -88,6 +90,7 @@ class CategoryViewSet(mixins.ListModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+    ordering = ('name',)
 
     def get_object(self) -> Category:
         return get_object_or_404(Category, slug=self.kwargs.get('slug'))
@@ -103,6 +106,7 @@ class GenreViewSet(mixins.ListModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+    ordering = ('name',)
 
     def get_object(self) -> Genre:
         return get_object_or_404(Genre, slug=self.kwargs.get('slug'))
