@@ -16,8 +16,6 @@ router.register('categories', views.CategoryViewSet)
 router.register('genres', views.GenreViewSet)
 router.register('users', views.UsersViewSet)
 
-print(router.urls)
-
 urlpatterns = [
     path('users/me/', views.MeViewSet.as_view({
         'get': 'retrieve',
