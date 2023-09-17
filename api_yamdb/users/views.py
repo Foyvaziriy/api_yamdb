@@ -50,9 +50,15 @@ class Signup(GenericAPIView):
         serializer: SignUpSerializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             confirmation_code: str = generate_confirmation_code()
-            user: QuerySet = User.objects.filter(**request.data)
-            if user:
-                user = user[0]
+
+            username = serializer.validated_data.get('username')
+            email = serializer.validated_data.get('email')
+
+            user_by_username: QuerySet = User.objects.filter(username=username)
+            user_by_email: QuerySet = User.objects.filter(email=email)
+
+            if bool(user_by_username) and bool(user_by_email):
+                user = get_object_or_404(User, **serializer.validated_data)
                 user.confirmation_code = confirmation_code
                 user.save()
                 send_code(
@@ -62,6 +68,20 @@ class Signup(GenericAPIView):
                 return Response(
                     serializer.validated_data,
                     status=status.HTTP_200_OK,
+                )
+            elif user_by_username:
+                return Response(
+                    {
+                        'username': f'user with username {username} is already exists.'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            elif user_by_email:
+                return Response(
+                    {
+                        'username': f'user with email {email} is already exists.'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             new_user = User.objects.create(
                 **serializer.validated_data,

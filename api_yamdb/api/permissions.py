@@ -7,7 +7,9 @@ from django.db.models import Model
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request: HttpRequest, view: ModelViewSet) -> bool:
         return (
-            request.user.is_authenticated and (request.user.role == 'admin')
+            request.user.is_authenticated and (
+                request.user.role == 'admin' or request.user.is_superuser
+            )
         )
 
 
