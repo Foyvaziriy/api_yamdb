@@ -2,14 +2,12 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpRequest
 from django.db.models.query import QuerySet
-from rest_framework import status, viewsets
-from rest_framework.filters import SearchFilter
+from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import AuthSerializer, SignUpSerializer
-from .services import (
+from users.serializers import AuthSerializer, SignUpSerializer
+from users.services import (
     get_tokens_for_user, generate_confirmation_code, send_code)
 
 
@@ -81,6 +79,3 @@ class Signup(GenericAPIView):
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
