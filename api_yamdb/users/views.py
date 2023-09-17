@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from users.serializers import AuthSerializer, SignUpSerializer
 from users.services import (
     get_tokens_for_user, generate_confirmation_code, send_code)
-from api.services import get_all_objects, query_with_filter
+from api.services import get_all_objects, query_with_filter, create_object
 
 
 User = get_user_model()
@@ -69,7 +69,7 @@ class Signup(GenericAPIView):
                 user.save()
                 send_code(
                     user_email=user.email,
-                    confirmation_code=confirmation_code
+                    confirmation_code=confirmation_code,
                 )
                 return Response(
                     serializer.validated_data,
@@ -85,19 +85,16 @@ class Signup(GenericAPIView):
                     {'detail': f'email {msg.format(email)}'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            new_user = User.objects.create(
-                **serializer.validated_data,
-                confirmation_code=confirmation_code
+            new_user = create_object(
+                User, **serializer.validated_data,
+                confirmation_code=confirmation_code,
             )
             send_code(
                 user_email=new_user.email,
-                confirmation_code=confirmation_code
+                confirmation_code=confirmation_code,
             )
             return Response(
-                {
-                    'username': new_user.username,
-                    'email': new_user.email
-                },
+                serializer.validated_data,
                 status=status.HTTP_200_OK,
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST,)
