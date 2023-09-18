@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from users.serializers import AuthSerializer, SignUpSerializer
 from users.services import (
     get_tokens_for_user, generate_confirmation_code, send_code)
+from api.services import get_all_objects, query_with_filter, create_object
 
 
 User = get_user_model()
@@ -19,7 +20,8 @@ class Auth(CreateAPIView):
 
     def post(self, request: HttpRequest) -> Response:
         try:
-            serializer = self.serializer_class(data=request.data)
+            serializer: AuthSerializer = self.serializer_class(
+                data=request.data)
             if serializer.is_valid():
                 data = serializer.validated_data
                 user = get_object_or_404(
@@ -27,9 +29,8 @@ class Auth(CreateAPIView):
                     username=data.get('username'),
                     confirmation_code=data.get('confirmation_code'),
                 )
-                tokens = get_tokens_for_user(user)
                 return Response(
-                    tokens,
+                    get_tokens_for_user(user),
                     status=status.HTTP_200_OK,
                 )
             return Response(
@@ -50,32 +51,50 @@ class Signup(GenericAPIView):
         serializer: SignUpSerializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             confirmation_code: str = generate_confirmation_code()
-            user: QuerySet = User.objects.filter(**request.data)
+
+            names_emails: dict[str, str] = dict()
+            for user in get_all_objects(User):
+                names_emails[user.username] = user.email
+
+            username: str = serializer.validated_data.get('username')
+            email: str = serializer.validated_data.get('email')
+            msg: str = "'{}' is already taken."
+
+            user: QuerySet = query_with_filter(
+                User, filter_dict=serializer.validated_data)
+
             if user:
                 user = user[0]
                 user.confirmation_code = confirmation_code
                 user.save()
                 send_code(
                     user_email=user.email,
-                    confirmation_code=confirmation_code
+                    confirmation_code=confirmation_code,
                 )
                 return Response(
                     serializer.validated_data,
                     status=status.HTTP_200_OK,
                 )
-            new_user = User.objects.create(
-                **serializer.validated_data,
-                confirmation_code=confirmation_code
+            if username in names_emails:
+                return Response(
+                    {'detail': f'username {msg.format(username)}'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if email in names_emails.values():
+                return Response(
+                    {'detail': f'email {msg.format(email)}'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            new_user = create_object(
+                User, **serializer.validated_data,
+                confirmation_code=confirmation_code,
             )
             send_code(
                 user_email=new_user.email,
-                confirmation_code=confirmation_code
+                confirmation_code=confirmation_code,
             )
             return Response(
-                {
-                    'username': new_user.username,
-                    'email': new_user.email
-                },
+                serializer.validated_data,
                 status=status.HTTP_200_OK,
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST,)

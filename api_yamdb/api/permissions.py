@@ -7,23 +7,25 @@ from django.db.models import Model
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request: HttpRequest, view: ModelViewSet) -> bool:
         return (
-            request.user.is_authenticated and (request.user.role == 'admin')
+            request.user.is_authenticated and (
+                request.user.role == 'admin' or request.user.is_superuser
+            )
         )
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request: HttpRequest, view: ModelViewSet) -> bool:
         return (
-            request.method in permissions.SAFE_METHODS
-            or (request.user.is_authenticated and request.user.role == 'admin')
+            request.method in permissions.SAFE_METHODS or (
+                request.user.is_authenticated and request.user.role == 'admin')
         )
 
 
 class AuthorAdminModeratorOrReadOnly(permissions.BasePermission):
     def has_permission(self, request: HttpRequest, view: ModelViewSet) -> bool:
         return (
-            request.method in permissions.SAFE_METHODS
-            or request.user.is_authenticated
+            request.method in permissions.SAFE_METHODS or (
+                request.user.is_authenticated)
         )
 
     def has_object_permission(self,

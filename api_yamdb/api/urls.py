@@ -17,6 +17,10 @@ router.register('genres', views.GenreViewSet)
 router.register('users', views.UsersViewSet)
 
 urlpatterns = [
+    path('users/me/', views.MeViewSet.as_view({
+        'get': 'retrieve',
+        'patch': 'update'
+    })),
     path('', include(router.urls)),
     path('auth/', include('users.urls'))
 ]

@@ -1,5 +1,3 @@
-import logging
-
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from reviews.models import (
@@ -18,6 +16,15 @@ from api.services import (
 
 
 User = get_user_model()
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -84,7 +91,8 @@ class ReviewCommentSerializerAbstract(serializers.ModelSerializer):
         read_only=True, slug_field='username',
         default=serializers.CurrentUserDefault()
     )
-    pub_date = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%SZ', read_only=True)
+    pub_date = serializers.DateTimeField(
+        format='%Y-%m-%dT%H:%M:%SZ', read_only=True)
 
 
 class ReviewSerializer(ReviewCommentSerializerAbstract):
@@ -100,8 +108,10 @@ class ReviewSerializer(ReviewCommentSerializerAbstract):
                 {'title': title,
                  'author': self.context['request'].user
                  }).exists():
-                raise serializers.ValidationError('Один пользователь может добавить '
-                                                  'только один отзыв в рамках произведения')
+                raise serializers.ValidationError(
+                    'Один пользователь может добавить '
+                    'только один отзыв в рамках произведения'
+                )
 
         return data
 
