@@ -25,7 +25,7 @@ def send_code(confirmation_code: str, user_email: str) -> None:
         subject=subject,
         message=message,
         from_email=from_email,
-        recipient_list=recipient_list
+        recipient_list=recipient_list,
     )
 
     print(f'Письмо сохранено в локальной папке для {user_email}')

@@ -8,7 +8,10 @@ from rest_framework.response import Response
 
 from users.serializers import AuthSerializer, SignUpSerializer
 from users.services import (
-    get_tokens_for_user, generate_confirmation_code, send_code)
+    get_tokens_for_user,
+    generate_confirmation_code,
+    send_code,
+)
 from api.services import get_all_objects, query_with_filter, create_object
 
 
@@ -21,7 +24,8 @@ class Auth(CreateAPIView):
     def post(self, request: HttpRequest) -> Response:
         try:
             serializer: AuthSerializer = self.serializer_class(
-                data=request.data)
+                data=request.data
+            )
             if serializer.is_valid():
                 data = serializer.validated_data
                 user = get_object_or_404(
@@ -61,7 +65,8 @@ class Signup(GenericAPIView):
             msg: str = "'{}' is already taken."
 
             user: QuerySet = query_with_filter(
-                User, filter_dict=serializer.validated_data)
+                User, filter_dict=serializer.validated_data
+            )
 
             if user:
                 user = user[0]
@@ -86,7 +91,8 @@ class Signup(GenericAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             new_user = create_object(
-                User, **serializer.validated_data,
+                User,
+                **serializer.validated_data,
                 confirmation_code=confirmation_code,
             )
             send_code(
@@ -97,4 +103,7 @@ class Signup(GenericAPIView):
                 serializer.validated_data,
                 status=status.HTTP_200_OK,
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST,)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )

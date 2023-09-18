@@ -8,6 +8,7 @@ class CustomUser(AbstractUser):
         USER: str = 'user'
         MODERATOR: str = 'moderator'
         ADMIN: str = 'admin'
+
     email = models.EmailField(
         _('email address'),
         unique=True,

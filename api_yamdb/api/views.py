@@ -25,7 +25,7 @@ from api.serializers import (
     UserSerializer,
     CommentSerializer,
     GenreSerializer,
-    UserMeSerializer
+    UserMeSerializer,
 )
 from api.permissions import (
     IsAdminOrReadOnly,
@@ -52,9 +52,9 @@ class UsersViewSet(NoPutViewSetMixin, ModelViewSet):
         return get_object_or_404(User, username=self.kwargs['username'])
 
 
-class MeViewSet(mixins.RetrieveModelMixin,
-                mixins.UpdateModelMixin,
-                GenericViewSet):
+class MeViewSet(
+    mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet
+):
     queryset = get_all_objects(User)
     serializer_class = UserMeSerializer
     permission_classes = (IsAuthenticated,)
@@ -80,10 +80,12 @@ class TitleViewSet(NoPutViewSetMixin, ModelViewSet):
         return TitlePOSTSerilizer
 
 
-class CategoryViewSet(mixins.ListModelMixin,
-                      mixins.CreateModelMixin,
-                      mixins.DestroyModelMixin,
-                      GenericViewSet):
+class CategoryViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
     queryset = get_all_objects(Category)
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -96,10 +98,12 @@ class CategoryViewSet(mixins.ListModelMixin,
         return get_object_or_404(Category, slug=self.kwargs.get('slug'))
 
 
-class GenreViewSet(mixins.ListModelMixin,
-                   mixins.CreateModelMixin,
-                   mixins.DestroyModelMixin,
-                   GenericViewSet):
+class GenreViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet,
+):
     queryset = get_all_objects(Genre)
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -120,20 +124,14 @@ class ReviewViewSet(NoPutViewSetMixin, ModelViewSet):
 
     def get_queryset(self):
         return query_with_filter(
-            Review,
-            {'title': self.kwargs.get('title_id')}
+            Review, {'title': self.kwargs.get('title_id')}
         )
 
     def perform_create(self, serializer):
         title = query_with_filter(
-            Title,
-            {'pk': self.kwargs.get('title_id')},
-            single=True
+            Title, {'pk': self.kwargs.get('title_id')}, single=True
         )
-        serializer.save(
-            author=self.request.user,
-            title=title
-        )
+        serializer.save(author=self.request.user, title=title)
 
 
 class CommentViewSet(NoPutViewSetMixin, ModelViewSet):
@@ -145,20 +143,19 @@ class CommentViewSet(NoPutViewSetMixin, ModelViewSet):
     def get_queryset(self):
         return query_with_filter(
             Comment,
-            {'review': self.kwargs.get('review_id'),
-             'review__title': self.kwargs.get('title_id')
-             }
+            {
+                'review': self.kwargs.get('review_id'),
+                'review__title': self.kwargs.get('title_id'),
+            },
         )
 
     def perform_create(self, serializer):
         review = query_with_filter(
             Review,
-            {'pk': self.kwargs.get('review_id'),
-             'title': self.kwargs.get('title_id')
-             },
-            single=True
+            {
+                'pk': self.kwargs.get('review_id'),
+                'title': self.kwargs.get('title_id'),
+            },
+            single=True,
         )
-        serializer.save(
-            author=self.request.user,
-            review=review
-        )
+        serializer.save(author=self.request.user, review=review)
