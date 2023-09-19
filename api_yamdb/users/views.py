@@ -23,29 +23,28 @@ class Auth(CreateAPIView):
     serializer_class = AuthSerializer
 
     def post(self, request: HttpRequest) -> Response:
-            serializer: AuthSerializer = self.serializer_class(
-                data=request.data
+        serializer: AuthSerializer = self.serializer_class(
+            data=request.data
+        )
+        if serializer.is_valid():
+            data = serializer.validated_data
+            user = get_object_or_404(
+                User,
+                username=data.get('username'),
             )
-            if serializer.is_valid():
-                data = serializer.validated_data
-                user = get_object_or_404(
-                    User,
-                    username=data.get('username'),
-                )
-                if user.confirmation_code != data.get('confirmation_code'):
-                    return Response(
-                        serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-                return Response(
-                    get_tokens_for_user(user),
-                    status=status.HTTP_200_OK,
-                )
-            else:
+            if user.confirmation_code != data.get('confirmation_code'):
                 return Response(
                     serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            return Response(
+                get_tokens_for_user(user),
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class Signup(GenericAPIView):
