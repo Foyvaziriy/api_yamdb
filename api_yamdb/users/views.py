@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.http import Http404, HttpRequest
+from django.http import HttpRequest
 from django.db.models.query import QuerySet
+
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
@@ -22,30 +23,28 @@ class Auth(CreateAPIView):
     serializer_class = AuthSerializer
 
     def post(self, request: HttpRequest) -> Response:
-        try:
-            serializer: AuthSerializer = self.serializer_class(
-                data=request.data
+        serializer: AuthSerializer = self.serializer_class(
+            data=request.data
+        )
+        if serializer.is_valid():
+            data = serializer.validated_data
+            user = get_object_or_404(
+                User,
+                username=data.get('username'),
             )
-            if serializer.is_valid():
-                data = serializer.validated_data
-                user = get_object_or_404(
-                    User,
-                    username=data.get('username'),
-                    confirmation_code=data.get('confirmation_code'),
-                )
+            if user.confirmation_code != data.get('confirmation_code'):
                 return Response(
-                    get_tokens_for_user(user),
-                    status=status.HTTP_200_OK,
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
+                get_tokens_for_user(user),
+                status=status.HTTP_200_OK,
             )
-        except Http404:
-            return Response(
-                {'detail': 'User with provided data not found.'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class Signup(GenericAPIView):
