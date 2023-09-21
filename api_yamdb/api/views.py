@@ -67,10 +67,7 @@ class Auth(CreateAPIView):
             username=data.get('username'),
         )
         if user.confirmation_code != data.get('confirmation_code'):
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise ValidationError('Username or confirmation code is incorrect')
         return Response(
             get_tokens_for_user(user),
             status=status.HTTP_200_OK,
