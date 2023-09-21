@@ -5,7 +5,6 @@ from api.services import (
     get_all_objects,
     get_current_year,
     query_with_filter,
-    query_average_by_field,
 )
 
 
@@ -82,7 +81,7 @@ class TitlePOSTSerilizer(serializers.ModelSerializer):
 class TitleGETSerilizer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=False, many=True)
     category = CategorySerializer(read_only=False)
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField()
 
     class Meta:
         model = Title
@@ -95,11 +94,6 @@ class TitleGETSerilizer(serializers.ModelSerializer):
             'category',
             'genre',
         )
-
-    def get_rating(self, obj) -> int:
-        rating = query_average_by_field(Title, 'reviews__score')
-
-        return rating
 
 
 class ReviewCommentSerializerAbstract(serializers.ModelSerializer):
@@ -119,18 +113,21 @@ class ReviewSerializer(ReviewCommentSerializerAbstract):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
 
     def validate(self, data):
-        if self.context['request'].method == 'POST':
-            title = self.context['view'].kwargs['title_id']
-            if query_with_filter(
-                Review,
-                {'title': title, 'author': self.context['request'].user},
-            ).exists():
-                raise serializers.ValidationError(
-                    'Один пользователь может добавить '
-                    'только один отзыв в рамках произведения'
-                )
+        request = self.context['request']
+        if request.method != 'POST':
+            return data
 
-        return data
+        title = self.context['view'].kwargs['title_id']
+        if not query_with_filter(
+            Review,
+            {'title': title, 'author': self.context['request'].user},
+        ).exists():
+            return data
+
+        raise serializers.ValidationError(
+            'Один пользователь может добавить '
+            'только один отзыв в рамках произведения'
+        )
 
 
 class CommentSerializer(ReviewCommentSerializerAbstract):

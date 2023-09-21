@@ -16,6 +16,7 @@ from reviews.models import (
 from api.services import (
     get_all_objects,
     query_with_filter,
+    query_title_with_rating
 )
 from api.serializers import (
     TitleGETSerilizer,
@@ -28,9 +29,9 @@ from api.serializers import (
     UserMeSerializer,
 )
 from api.permissions import (
-    IsAdminOrReadOnly,
-    IsAdmin,
-    AuthorAdminModeratorOrReadOnly,
+    IsAuthAdminOrReadOnly,
+    IsAuthAdmin,
+    AuthAuthorAdminModeratorOrReadOnly,
 )
 from api.mixins import NoPutViewSetMixin
 from api.filters import TitleFilter
@@ -42,7 +43,7 @@ User = get_user_model()
 class UsersViewSet(NoPutViewSetMixin, ModelViewSet):
     queryset = get_all_objects(User)
     serializer_class = UserSerializer
-    permission_classes = (IsAdmin,)
+    permission_classes = (IsAuthAdmin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     lookup_field = 'username'
@@ -69,7 +70,7 @@ class MeViewSet(
 
 class TitleViewSet(NoPutViewSetMixin, ModelViewSet):
     queryset = get_all_objects(Title)
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     ordering = ('name',)
@@ -78,6 +79,9 @@ class TitleViewSet(NoPutViewSetMixin, ModelViewSet):
         if self.request.method == 'GET':
             return TitleGETSerilizer
         return TitlePOSTSerilizer
+
+    def get_queryset(self):
+        return query_title_with_rating()
 
 
 class CategoryViewSet(
@@ -88,7 +92,7 @@ class CategoryViewSet(
 ):
     queryset = get_all_objects(Category)
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
@@ -106,7 +110,7 @@ class GenreViewSet(
 ):
     queryset = get_all_objects(Genre)
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
@@ -118,7 +122,7 @@ class GenreViewSet(
 
 class ReviewViewSet(NoPutViewSetMixin, ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (AuthorAdminModeratorOrReadOnly,)
+    permission_classes = (AuthAuthorAdminModeratorOrReadOnly,)
     filter_backends = (filters.OrderingFilter,)
     ordering = ('title',)
 
@@ -136,7 +140,7 @@ class ReviewViewSet(NoPutViewSetMixin, ModelViewSet):
 
 class CommentViewSet(NoPutViewSetMixin, ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (AuthorAdminModeratorOrReadOnly,)
+    permission_classes = (AuthAuthorAdminModeratorOrReadOnly,)
     filter_backends = (filters.OrderingFilter,)
     ordering = ('-pub_date',)
 

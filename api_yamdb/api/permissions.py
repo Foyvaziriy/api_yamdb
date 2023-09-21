@@ -4,21 +4,21 @@ from django.http import HttpRequest
 from django.db.models import Model
 
 
-class IsAdmin(permissions.BasePermission):
+class IsAuthAdmin(permissions.BasePermission):
     def has_permission(self, request: HttpRequest, view: ModelViewSet) -> bool:
         return request.user.is_authenticated and (
             request.user.role == 'admin' or request.user.is_superuser
         )
 
 
-class IsAdminOrReadOnly(permissions.BasePermission):
+class IsAuthAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request: HttpRequest, view: ModelViewSet) -> bool:
         return request.method in permissions.SAFE_METHODS or (
             request.user.is_authenticated and request.user.role == 'admin'
         )
 
 
-class AuthorAdminModeratorOrReadOnly(permissions.BasePermission):
+class AuthAuthorAdminModeratorOrReadOnly(permissions.BasePermission):
     def has_permission(self, request: HttpRequest, view: ModelViewSet) -> bool:
         return request.method in permissions.SAFE_METHODS or (
             request.user.is_authenticated
