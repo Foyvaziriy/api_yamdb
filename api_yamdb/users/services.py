@@ -28,8 +28,6 @@ def send_code(confirmation_code: str, user_email: str) -> None:
         recipient_list=recipient_list,
     )
 
-    print(f'Письмо сохранено в локальной папке для {user_email}')
-
 
 def get_tokens_for_user(user: User) -> dict[str, str]:
     refresh = RefreshToken.for_user(user)
