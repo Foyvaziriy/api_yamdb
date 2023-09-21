@@ -1,5 +1,6 @@
 from django.db.models import Model, Avg
 from django.db.models.query import QuerySet
+from django.apps import apps
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
@@ -21,9 +22,10 @@ def query_with_filter(
         return model.objects.filter(**filter_dict)
 
 
-def query_average_by_field(model: Model, field: str) -> float:
-    return model.objects.aggregate(average_field=Avg(field))['average_field']
-
-
 def get_current_year() -> int:
     return timezone.now().year
+
+
+def query_title_with_rating() -> QuerySet:
+    model = apps.get_model('reviews', 'Title')
+    return model.objects.annotate(rating=Avg('reviews__score'))

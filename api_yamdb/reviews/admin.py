@@ -8,7 +8,6 @@ class TitleAdmin(admin.ModelAdmin):
     fields = (
         'name',
         'year',
-        'rating',
         'description',
         'category',
     )
