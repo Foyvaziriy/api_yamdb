@@ -7,6 +7,6 @@ class ApiConfig(AppConfig):
 
     def ready(self) -> None:
         from api.views import code_generated
-        from api.signals import send_code
+        from users.services import send_code
 
         code_generated.connect(send_code)

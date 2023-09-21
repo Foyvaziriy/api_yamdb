@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpRequest
-from django.db.models.query import QuerySet
+from django.db.utils import IntegrityError
 from django.dispatch import Signal
 
 from reviews.models import (
@@ -22,7 +22,6 @@ from reviews.models import (
 from api.services import (
     get_all_objects,
     query_with_filter,
-    create_object,
 )
 from api.serializers import (
     TitleGETSerilizer,
@@ -46,7 +45,6 @@ from api.filters import TitleFilter
 from users.services import (
     get_tokens_for_user,
     generate_confirmation_code,
-    send_code,
 )
 
 
@@ -86,31 +84,20 @@ class Signup(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         confirmation_code: str = generate_confirmation_code()
 
-        if query_with_filter(
-            User, filter_dict=serializer.validated_data
-        ).exists():
-            user = get_object_or_404(User, **serializer.validated_data)
-            user.confirmation_code = confirmation_code
-            user.save()
-            code_generated.send(
-                sender=Signup,
-                user_email=user.email,
-                confirmation_code=confirmation_code
-            )
-            return Response(
-                serializer.validated_data,
-                status=status.HTTP_200_OK,
-            )
+        try:
+            user, is_new = User.objects.get_or_create(
+                **serializer.validated_data)
+        except IntegrityError as err:
+            error_field = err.args[0].split('.')[-1]
+            raise ValidationError(
+                {error_field: f'Provided {error_field} is already taken'})
+        user.confirmation_code = confirmation_code
+        user.save()
 
-        new_user = create_object(
-            User,
-            **serializer.validated_data,
-            confirmation_code=confirmation_code,
-        )
         code_generated.send(
             sender=Signup,
             confirmation_code=confirmation_code,
-            user_email=new_user.email
+            user_email=user.email
         )
         return Response(
             serializer.validated_data,

@@ -17,20 +17,6 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.SlugField(max_length=150)
     email = serializers.EmailField(max_length=254)
 
-    def validate(self, attrs):
-        username = attrs.get('username')
-        email = attrs.get('email')
-        msg: str = "'{}' is already taken."
-
-        if query_with_filter(User, attrs).exists():
-            return attrs
-        if query_with_filter(User, {'username': username}).exists():
-            raise ValidationError(f'username {msg.format(username)}')
-        if query_with_filter(User, {'email': email}).exists():
-            raise ValidationError(f'email {msg.format(email)}')
-
-        return attrs
-
     def validate_username(self, value):
         if value == 'me':
             raise ValidationError('You cant use "me" as username')
