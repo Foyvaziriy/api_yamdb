@@ -1,10 +1,16 @@
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework import filters, mixins
+from rest_framework import filters, mixins, status
 from rest_framework.serializers import ModelSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
+from django.http import HttpRequest
+from django.db.utils import IntegrityError
+from django.dispatch import Signal
 
 from reviews.models import (
     Title,
@@ -16,7 +22,8 @@ from reviews.models import (
 from api.services import (
     get_all_objects,
     query_with_filter,
-    query_title_with_rating
+    get_or_create,
+    query_title_with_rating,
 )
 from api.serializers import (
     TitleGETSerilizer,
@@ -27,6 +34,8 @@ from api.serializers import (
     CommentSerializer,
     GenreSerializer,
     UserMeSerializer,
+    AuthSerializer,
+    SignUpSerializer,
 )
 from api.permissions import (
     IsAuthAdminOrReadOnly,
@@ -35,9 +44,64 @@ from api.permissions import (
 )
 from api.mixins import NoPutViewSetMixin
 from api.filters import TitleFilter
+from users.services import (
+    get_tokens_for_user,
+    generate_confirmation_code,
+)
 
 
 User = get_user_model()
+code_generated = Signal()
+
+
+class Auth(CreateAPIView):
+    serializer_class = AuthSerializer
+
+    def post(self, request: HttpRequest) -> Response:
+        serializer: AuthSerializer = self.serializer_class(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        user = get_object_or_404(
+            User,
+            username=data.get('username'),
+        )
+        if user.confirmation_code != data.get('confirmation_code'):
+            raise ValidationError('Username or confirmation code is incorrect')
+        return Response(
+            get_tokens_for_user(user),
+            status=status.HTTP_200_OK,
+        )
+
+
+class Signup(GenericAPIView):
+    serializer_class = SignUpSerializer
+
+    def post(self, request: HttpRequest) -> Response:
+        serializer: SignUpSerializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        confirmation_code: str = generate_confirmation_code()
+
+        try:
+            user, is_new = get_or_create(
+                User, **serializer.validated_data)
+        except IntegrityError as err:
+            error_field = err.args[0].split('.')[-1]
+            raise ValidationError(
+                {error_field: f'Provided {error_field} is already taken'})
+        user.confirmation_code = confirmation_code
+        user.save()
+
+        code_generated.send(
+            sender=Signup,
+            confirmation_code=confirmation_code,
+            user_email=user.email
+        )
+        return Response(
+            serializer.validated_data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class UsersViewSet(NoPutViewSetMixin, ModelViewSet):
