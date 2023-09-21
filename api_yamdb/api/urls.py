@@ -27,5 +27,6 @@ urlpatterns = [
         views.MeViewSet.as_view({'get': 'retrieve', 'patch': 'update'}),
     ),
     path('', include(router.urls)),
-    path('auth/', include('users.urls')),
+    path('auth/token/', views.Auth.as_view()),
+    path('auth/signup/', views.Signup.as_view()),
 ]

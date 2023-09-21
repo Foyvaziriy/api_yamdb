@@ -4,6 +4,10 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
 
+def get_or_create(model: Model, **kwargs) -> (Model, bool):
+    return model.objects.get_or_create(**kwargs)
+
+
 def create_object(model: Model, **parameters) -> Model:
     return model.objects.create(**parameters)
 
