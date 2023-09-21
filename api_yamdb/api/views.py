@@ -22,6 +22,7 @@ from reviews.models import (
 from api.services import (
     get_all_objects,
     query_with_filter,
+    get_or_create,
 )
 from api.serializers import (
     TitleGETSerilizer,
@@ -85,8 +86,8 @@ class Signup(GenericAPIView):
         confirmation_code: str = generate_confirmation_code()
 
         try:
-            user, is_new = User.objects.get_or_create(
-                **serializer.validated_data)
+            user, is_new = get_or_create(
+                User, **serializer.validated_data)
         except IntegrityError as err:
             error_field = err.args[0].split('.')[-1]
             raise ValidationError(
