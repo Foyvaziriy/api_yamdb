@@ -37,7 +37,7 @@ pip install -r requirements.txt
 ```shell
 python manage.py runserver
 ```
-## Ссылка на документацию API
+## Ссылка на документацию APIgit status
 
 ```shell
 http://127.0.0.1:8000/redoc/

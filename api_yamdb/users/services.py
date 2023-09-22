@@ -15,20 +15,18 @@ def generate_confirmation_code(length: int = 6) -> str:
     return code
 
 
-def send_code(confirmation_code: str, user_email: str) -> None:
+def send_code(sender, **kwargs) -> None:
     subject: str = 'Код подтверждения регистрации'
-    message: str = f'Ваш код подтверждения: {confirmation_code}'
+    message: str = f'Ваш код подтверждения: {kwargs.get("confirmation_code")}'
     from_email: str = 'production@yandex.ru'
-    recipient_list: list = [user_email]
+    recipient_list: list = [kwargs.get('user_email')]
 
     send_mail(
         subject=subject,
         message=message,
         from_email=from_email,
-        recipient_list=recipient_list
+        recipient_list=recipient_list,
     )
-
-    print(f'Письмо сохранено в локальной папке для {user_email}')
 
 
 def get_tokens_for_user(user: User) -> dict[str, str]:

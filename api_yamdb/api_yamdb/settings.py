@@ -145,8 +145,8 @@ LOGGING = {
     'formatters': {
         'base': {
             'format': '{asctime} - {levelname} - FILENAME: {filename} '
-                      '- LINE: {lineno} - {message}',
-            'style': '{'
+            '- LINE: {lineno} - {message}',
+            'style': '{',
         }
     },
     'handlers': {
