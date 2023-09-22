@@ -11,7 +11,7 @@ from reviews.models import (
 
 
 class Command(BaseCommand):
-    help = '''
+    help: str = '''
     Команда для заполнения базы данных из csv файлов.
     загрузите файл в папку read_csv и используйте команду в формате:
     python manage.py <your_model> <your_csv_file.csv>
