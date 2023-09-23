@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+
 from reviews.models import Title, Genre, Category, Review, Comment
 from api.services import (
     get_all_objects,
-    get_current_year,
     query_with_filter,
 )
+from api.utils import get_current_year
 
 
 User = get_user_model()
