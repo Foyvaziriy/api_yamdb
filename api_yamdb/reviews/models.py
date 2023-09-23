@@ -72,7 +72,7 @@ class Review(models.Model):
         User, on_delete=models.CASCADE, related_name='reviews'
     )
     text = models.TextField('Текст отзыва')
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         'Оценка пользователя',
         validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
