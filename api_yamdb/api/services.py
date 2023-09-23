@@ -1,8 +1,8 @@
 from django.db.models import Model, Avg
 from django.db.models.query import QuerySet
-from django.apps import apps
-from django.utils import timezone
 from django.shortcuts import get_object_or_404
+
+from reviews.models import Title
 
 
 def get_or_create(model: Model, **kwargs) -> (Model, bool):
@@ -26,10 +26,5 @@ def query_with_filter(
         return model.objects.filter(**filter_dict)
 
 
-def get_current_year() -> int:
-    return timezone.now().year
-
-
 def query_title_with_rating() -> QuerySet:
-    model = apps.get_model('reviews', 'Title')
-    return model.objects.annotate(rating=Avg('reviews__score'))
+    return Title.objects.annotate(rating=Avg('reviews__score'))

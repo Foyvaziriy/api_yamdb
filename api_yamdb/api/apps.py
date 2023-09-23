@@ -6,7 +6,7 @@ class ApiConfig(AppConfig):
     name = 'api'
 
     def ready(self) -> None:
-        from api.views import code_generated
+        from api.views import send_email
         from users.services import send_code
 
-        code_generated.connect(send_code)
+        send_email.connect(send_code)

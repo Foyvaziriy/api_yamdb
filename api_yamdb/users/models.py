@@ -28,3 +28,15 @@ class CustomUser(AbstractUser):
         choices=Roles.choices,
         default=Roles.USER,
     )
+
+    @property
+    def is_user(self) -> bool:
+        return self.role == self.Roles.USER
+
+    @property
+    def is_moderator(self) -> bool:
+        return self.role == self.Roles.MODERATOR
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == self.Roles.ADMIN

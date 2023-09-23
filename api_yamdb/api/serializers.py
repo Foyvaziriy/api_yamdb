@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+
 from reviews.models import Title, Genre, Category, Review, Comment
 from api.services import (
     get_all_objects,
-    get_current_year,
     query_with_filter,
 )
+from api.utils import get_current_year
 
 
 User = get_user_model()
@@ -16,8 +17,10 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.SlugField(max_length=150)
     email = serializers.EmailField(max_length=254)
 
+    UNACCEPTABLE_USERNAME: str = 'me'
+
     def validate_username(self, value):
-        if value == 'me':
+        if value == self.UNACCEPTABLE_USERNAME:
             raise ValidationError('You cant use "me" as username')
         return value
 

@@ -2,7 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth import get_user_model
 
-from api.services import get_current_year
+from api.utils import get_current_year
 
 
 User = get_user_model()
@@ -72,7 +72,7 @@ class Review(models.Model):
         User, on_delete=models.CASCADE, related_name='reviews'
     )
     text = models.TextField('Текст отзыва')
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         'Оценка пользователя',
         validators=[MinValueValidator(1), MaxValueValidator(10)],
     )

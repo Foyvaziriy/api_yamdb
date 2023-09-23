@@ -51,7 +51,7 @@ from users.services import (
 
 
 User = get_user_model()
-code_generated = Signal()
+send_email = Signal()
 
 
 class Auth(CreateAPIView):
@@ -93,7 +93,7 @@ class Signup(GenericAPIView):
         user.confirmation_code = confirmation_code
         user.save()
 
-        code_generated.send(
+        send_email.send(
             sender=Signup,
             confirmation_code=confirmation_code,
             user_email=user.email
