@@ -19,7 +19,7 @@ from reviews.models import (
     Comment,
     Genre,
 )
-from api.services import (
+from reviews.services import (
     get_all_objects,
     query_with_filter,
     get_or_create,
@@ -44,7 +44,7 @@ from api.permissions import (
 )
 from api.mixins import NoPutViewSetMixin
 from api.filters import TitleFilter
-from users.services import (
+from users.utils import (
     get_tokens_for_user,
     generate_confirmation_code,
 )

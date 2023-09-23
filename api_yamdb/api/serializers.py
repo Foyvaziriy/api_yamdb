@@ -3,11 +3,11 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
 from reviews.models import Title, Genre, Category, Review, Comment
-from api.services import (
+from reviews.services import (
     get_all_objects,
     query_with_filter,
 )
-from api.utils import get_current_year
+from reviews.utils import get_current_year
 
 
 User = get_user_model()
